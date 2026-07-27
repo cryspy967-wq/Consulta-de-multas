@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Portal Oficial de Servicios de Tránsito</title>
+  <title>Portal de Servicios de Tránsito</title>
   <style>
     :root {
       --bg-color: #f4f6f8;
@@ -22,10 +22,6 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Arial, sans-serif; }
     body { background-color: var(--bg-color); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; }
-
-    /* Top Bar */
-    .top-bar { background: #1a252f; color: #fff; padding: 6px 20px; font-size: 0.8rem; display: flex; justify-content: space-between; align-items: center; }
-    .top-bar span { font-weight: 600; letter-spacing: 0.5px; }
 
     /* Header & Nav */
     header { background: var(--card-bg); border-bottom: 1px solid var(--border); box-shadow: 0 2px 4px rgba(0,0,0,0.04); }
@@ -83,11 +79,6 @@
   </style>
 </head>
 <body>
-
-  <div class="top-bar">
-    <span>REPÚBLICA BOLIVARIANA DE VENEZUELA</span>
-    <span>ATENCIÓN CIUDADANA</span>
-  </div>
 
   <header>
     <div class="header-container">
@@ -251,11 +242,10 @@
   </main>
 
   <footer>
-    © 2026 Portal de Tránsito y Transporte. Todos los derechos reservados.
+    © Sistema de Gestión de Tránsito. Todos los derechos reservados.
   </footer>
 
   <script>
-    // Base de datos de prueba almacenada en memoria/localStorage
     let multas = JSON.parse(localStorage.getItem('db_multas')) || [
       { id: 1, cedula: "12345678", nombre: "Carlos Pérez", motivo: "Exceso de velocidad", monto: 50, fecha: "2026-07-20", estado: "Pendiente" },
       { id: 2, cedula: "87654321", nombre: "Maria Rodriguez", motivo: "Estacionar en zona prohibida", monto: 30, fecha: "2026-07-22", estado: "Pagada" },
@@ -421,3 +411,4 @@
   </script>
 </body>
 </html>
+
