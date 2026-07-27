@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal de Multas de Tránsito</title>
+  <style>
+    /* Reset & CSS Variables */
+    :root {
+      --bg-color: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --border: #e2e8f0;
+      --radius: 12px;
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      align-items: center;
+      padding: 16px;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 500px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Header & Navigation */
+    header {
+      text-align: center;
+      padding: 12px 0;
+    }
+
+    header h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+    }
+
+    nav {
+      display: flex;
+      background: #e2e8f0;
+      padding: 4px;
+      border-radius: var(--radius);
+      gap: 4px;
+    }
+
+    nav button {
+      flex: 1;
+      padding: 10px 4px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 0.85rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    nav button.active {
+      background: var(--card-bg);
+      color: var(--primary);
+      box-shadow: var(--shadow);
+    }
+
+    /* Cards & Panels */
+    .panel {
+      display: none;
+      background: var(--card-bg);
+      padding: 24px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+    }
+
+    .panel.active {
+      display: block;
+    }
+
+    h2 {
+      font-size: 1.2rem;
+      margin-bottom: 16px;
+      color: var(--text-main);
+      font-weight: 600;
+    }
+
+    /* Forms & Inputs */
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+
+    label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.95rem;
+      background-color: #fff;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--primary);
+    }
+
+    .btn {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      background-color: var(--primary);
+      color: white;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .btn:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .btn-secondary {
+      background-color: #cbd5e1;
+      color: var(--text-main);
+      margin-top: 12px;
+    }
+
+    .btn-small {
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      width: auto;
+    }
+
+    /* Table & Results */
+    .results-container {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .fine-card {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      background: #f8fafc;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .fine-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 700;
+    }
+
+    .badge {
+      padding: 4px 8px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .badge-paid { background: #d1fae5; color: #065f46; }
+    .badge-pending { background: #fee2e2; color: #991b1b; }
+    .badge-credit { background: #fef3c7; color: #92400e; }
+
+    .fine-details {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .auth-box {
+      text-align: center;
+    }
+
+    .user-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .error-msg {
+      color: var(--danger);
+      font-size: 0.85rem;
+      margin-top: 8px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    <header>
+      <h1>Portal de Tránsito</h1>
+    </header>
+
+    <!-- Navegación principal -->
+    <nav>
+      <button id="tab-consulta" class="active" onclick="switchTab('consulta')">Consulta</button>
+      <button id="tab-empleado" onclick="switchTab('empleado')">Empleado</button>
+      <button id="tab-admin" onclick="switchTab('admin')">Admin</button>
+    </nav>
+
+    <!-- PANEL 1: CONSULTA PÚBLICA -->
+    <section id="panel-consulta" class="panel active">
+      <h2>Consultar Multas</h2>
+      <form id="search-form" onsubmit="consultarMultas(event)">
+        <div class="form-group">
+          <label for="search-cedula">Número de Cédula</label>
+          <input type="text" id="search-cedula" placeholder="Ej: 12345678" required>
+        </div>
+        <button type="submit" class="btn">Buscar</button>
+      </form>
+
+      <div id="public-results" class="results-container"></div>
+    </section>
+
+    <!-- PANEL 2: EMPLEADO -->
+    <section id="panel-empleado" class="panel">
+      <!-- Login Empleado -->
+      <div id="emp-login" class="auth-box">
+        <h2>Acceso Empleado</h2>
+        <form onsubmit="loginEmpleado(event)">
+          <div class="form-group">
+            <label for="emp-user">Usuario</label>
+            <input type="text" id="emp-user" placeholder="empleado" required>
+          </div>
+          <div class="form-group">
+            <label for="emp-pass">Contraseña</label>
+            <input type="password" id="emp-pass" placeholder="••••••••" required>
+          </div>
+          <button type="submit" class="btn">Ingresar</button>
+          <p id="emp-error" class="error-msg">Usuario o contraseña incorrectos</p>
+        </form>
+      </div>
+
+      <!-- Dashboard Empleado -->
+      <div id="emp-dashboard" style="display: none;">
+        <div class="user-bar">
+          <span>Modo: <strong>Empleado</strong></span>
+          <button onclick="logout('emp')" class="btn btn-small btn-secondary">Cerrar Sesión</button>
+        </div>
+        <h2>Gestión de Multas</h2>
+        <div class="form-group">
+          <label for="emp-search">Buscar por Cédula</label>
+          <input type="text" id="emp-search" placeholder="Ingrese Cédula" oninput="renderEmpleadoMultas()">
+        </div>
+        <div id="emp-results" class="results-container"></div>
+      </div>
+    </section>
+
+    <!-- PANEL 3: ADMINISTRACIÓN -->
+    <section id="panel-admin" class="panel">
+      <!-- Login Admin -->
+      <div id="admin-login" class="auth-box">
+        <h2>Acceso Administración</h2>
+        <form onsubmit="loginAdmin(event)">
+          <div class="form-group">
+            <label for="admin-user">Usuario</label>
+            <input type="text" id="admin-user" placeholder="admin" required>
+          </div>
+          <div class="form-group">
+            <label for="admin-pass">Contraseña</label>
+            <input type="password" id="admin-pass" placeholder="••••••••" required>
+          </div>
+          <button type="submit" class="btn">Ingresar</button>
+          <p id="admin-error" class="error-msg">Usuario o contraseña incorrectos</p>
+        </form>
+      </div>
+
+      <!-- Dashboard Admin -->
+      <div id="admin-dashboard" style="display: none;">
+        <div class="user-bar">
+          <span>Modo: <strong>Administrador</strong></span>
+          <button onclick="logout('admin')" class="btn btn-small btn-secondary">Cerrar Sesión</button>
+        </div>
+        <h2>Registrar Nueva Multa</h2>
+        <form onsubmit="crearMulta(event)">
+          <div class="form-group">
+            <label for="adm-nombre">Nombre Completo</label>
+            <input type="text" id="adm-nombre" required>
+          </div>
+          <div class="form-group">
+            <label for="adm-cedula">Número de Cédula</label>
+            <input type="text" id="adm-cedula" required>
+          </div>
+          <div class="form-group">
+            <label for="adm-motivo">Infracción / Motivo</label>
+            <input type="text" id="adm-motivo" required>
+          </div>
+          <div class="form-group">
+            <label for="adm-monto">Monto ($)</label>
+            <input type="number" id="adm-monto" min="0" step="0.01" required>
+          </div>
+          <div class="form-group">
+            <label for="adm-estado">Tipo de Pago / Estado</label>
+            <select id="adm-estado">
+              <option value="Pendiente">Pendiente</option>
+              <option value="A Crédito">A Crédito</option>
+              <option value="Pagado">Pagado</option>
+            </select>
+          </div>
+          <button type="submit" class="btn">Registrar Multa</button>
+        </form>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    // Inicializar datos base si no existen en localStorage
+    const defaultData = [
+      { id: 1, cedula: "12345678", nombre: "Carlos Pérez", motivo: "Exceso de velocidad", monto: 120.00, estado: "Pendiente" },
+      { id: 2, cedula: "12345678", nombre: "Carlos Pérez", motivo: "Estacionar en zona prohibida", monto: 45.00, estado: "A Crédito" },
+      { id: 3, cedula: "87654321", nombre: "María Gómez", motivo: "Uso del celular al conducir", monto: 80.00, estado: "Pagado" }
+    ];
+
+    if (!localStorage.getItem("multasDB")) {
+      localStorage.setItem("multasDB", JSON.stringify(defaultData));
+    }
+
+    function getMultas() {
+      return JSON.parse(localStorage.getItem("multasDB")) || [];
+    }
+
+    function saveMultas(data) {
+      localStorage.setItem("multasDB", JSON.stringify(data));
+    }
+
+    // Control de pestañas
+    function switchTab(tabName) {
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+
+      document.getElementById(`panel-${tabName}`).classList.add('active');
+      document.getElementById(`tab-${tabName}`).classList.add('active');
+
+      if (tabName === 'empleado' && document.getElementById('emp-dashboard').style.display !== 'none') {
+        renderEmpleadoMultas();
+      }
+    }
+
+    // --- PANEL CONSULTA ---
+    function consultarMultas(e) {
+      e.preventDefault();
+      const cedula = document.getElementById('search-cedula').value.trim();
+      const container = document.getElementById('public-results');
+      const multas = getMultas().filter(m => m.cedula === cedula);
+
+      container.innerHTML = "";
+
+      if (multas.length === 0) {
+        container.innerHTML = "<p style='text-align:center; color: var(--text-muted); font-size: 0.9rem;'>No se encontraron multas registradas para esta cédula.</p>";
+        return;
+      }
+
+      multas.forEach(m => {
+        const badgeClass = m.estado === 'Pagado' ? 'badge-paid' : (m.estado === 'A Crédito' ? 'badge-credit' : 'badge-pending');
+        container.innerHTML += `
+          <div class="fine-card">
+            <div class="fine-header">
+              <span>$${m.monto.toFixed(2)}</span>
+              <span class="badge ${badgeClass}">${m.estado}</span>
+            </div>
+            <div class="fine-details">
+              <span><strong>Infractor:</strong> ${m.nombre}</span>
+              <span><strong>Motivo:</strong> ${m.motivo}</span>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    // --- AUTENTICACIÓN ---
+    function loginAdmin(e) {
+      e.preventDefault();
+      const user = document.getElementById('admin-user').value.toLowerCase().trim();
+      const pass = document.getElementById('admin-pass').value.toLowerCase().trim();
+
+      if (user === 'admin' && pass === 'receso01') {
+        document.getElementById('admin-login').style.display = 'none';
+        document.getElementById('admin-dashboard').style.display = 'block';
+        document.getElementById('admin-error').style.display = 'none';
+      } else {
+        document.getElementById('admin-error').style.display = 'block';
+      }
+    }
+
+    function loginEmpleado(e) {
+      e.preventDefault();
+      const user = document.getElementById('emp-user').value.toLowerCase().trim();
+      const pass = document.getElementById('emp-pass').value.toLowerCase().trim();
+
+      if (user === 'empleado' && pass === 'receso05') {
+        document.getElementById('emp-login').style.display = 'none';
+        document.getElementById('emp-dashboard').style.display = 'block';
+        document.getElementById('emp-error').style.display = 'none';
+        renderEmpleadoMultas();
+      } else {
+        document.getElementById('emp-error').style.display = 'block';
+      }
+    }
+
+    function logout(type) {
+      if (type === 'admin') {
+        document.getElementById('admin-login').style.display = 'block';
+        document.getElementById('admin-dashboard').style.display = 'none';
+        document.getElementById('admin-user').value = '';
+        document.getElementById('admin-pass').value = '';
+      } else {
+        document.getElementById('emp-login').style.display = 'block';
+        document.getElementById('emp-dashboard').style.display = 'none';
+        document.getElementById('emp-user').value = '';
+        document.getElementById('emp-pass').value = '';
+      }
+    }
+
+    // --- PANEL ADMINISTRADOR ---
+    function crearMulta(e) {
+      e.preventDefault();
+      const multas = getMultas();
+      
+      const nuevaMulta = {
+        id: Date.now(),
+        nombre: document.getElementById('adm-nombre').value.trim(),
+        cedula: document.getElementById('adm-cedula').value.trim(),
+        motivo: document.getElementById('adm-motivo').value.trim(),
+        monto: parseFloat(document.getElementById('adm-monto').value),
+        estado: document.getElementById('adm-estado').value
+      };
+
+      multas.push(nuevaMulta);
+      saveMultas(multas);
+
+      alert('Multa registrada con éxito');
+      e.target.reset();
+    }
+
+    // --- PANEL EMPLEADO ---
+    function renderEmpleadoMultas() {
+      const query = document.getElementById('emp-search').value.trim();
+      const container = document.getElementById('emp-results');
+      let multas = getMultas();
+
+      if (query !== "") {
+        multas = multas.filter(m => m.cedula.includes(query));
+      }
+
+      container.innerHTML = "";
+
+      if (multas.length === 0) {
+        container.innerHTML = "<p style='text-align:center; color: var(--text-muted); font-size: 0.9rem;'>No hay multas que coincidan.</p>";
+        return;
+      }
+
+      multas.forEach(m => {
+        const badgeClass = m.estado === 'Pagado' ? 'badge-paid' : (m.estado === 'A Crédito' ? 'badge-credit' : 'badge-pending');
+        container.innerHTML += `
+          <div class="fine-card">
+            <div class="fine-header">
+              <span>Cédula: ${m.cedula}</span>
+              <span class="badge ${badgeClass}">${m.estado}</span>
+            </div>
+            <div class="fine-details">
+              <span><strong>Nombre:</strong> ${m.nombre}</span>
+              <span><strong>Motivo:</strong> ${m.motivo}</span>
+              <span><strong>Monto:</strong> $${m.monto.toFixed(2)}</span>
+            </div>
+            <div style="margin-top: 8px;">
+              <label>Cambiar Estado:</label>
+              <select onchange="actualizarEstado(${m.id}, this.value)">
+                <option value="Pendiente" ${m.estado === 'Pendiente' ? 'selected' : ''}>Pendiente</option>
+                <option value="A Crédito" ${m.estado === 'A Crédito' ? 'selected' : ''}>A Crédito</option>
+                <option value="Pagado" ${m.estado === 'Pagado' ? 'selected' : ''}>Pagado</option>
+              </select>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function actualizarEstado(id, nuevoEstado) {
+      const multas = getMultas();
+      const index = multas.findIndex(m => m.id === id);
+      if (index !== -1) {
+        multas[index].estado = nuevoEstado;
+        saveMultas(multas);
+        renderEmpleadoMultas();
+      }
+    }
+  </script>
+
+</body>
+</html>
