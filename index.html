@@ -104,10 +104,10 @@
         <h2 class="card-title">Consulta de Infracciones</h2>
         <p class="card-subtitle">Ingrese su documento de identidad para verificar multas pendientes.</p>
         
-        <form onsubmit="buscarMulta(event)">
+        <form onsubmit="buscarMulta(event)" autocomplete="off">
           <div class="form-group">
             <label for="cedula-consulta">Número de Cédula / Documento</label>
-            <input type="text" id="cedula-consulta" class="form-control" placeholder="Ej: 12345678" required>
+            <input type="text" id="cedula-consulta" class="form-control" placeholder="Ej: 12345678" required autocomplete="off">
           </div>
           <button type="submit" class="btn">Consultar Estado</button>
         </form>
@@ -122,14 +122,14 @@
       <div id="login-empleado" class="card" style="max-width: 400px; margin: 0 auto;">
         <h2 class="card-title">Acceso Empleado</h2>
         <p class="card-subtitle">Ingrese sus credenciales de usuario autorizado.</p>
-        <form onsubmit="loginUser(event, 'empleado')">
+        <form onsubmit="loginUser(event, 'empleado')" autocomplete="off">
           <div class="form-group">
             <label>Usuario</label>
-            <input type="text" id="user-emp" class="form-control" value="empleado" required>
+            <input type="text" id="user-emp" class="form-control" placeholder="Ingrese usuario" required autocomplete="off">
           </div>
           <div class="form-group">
             <label>Contraseña</label>
-            <input type="password" id="pass-emp" class="form-control" value="1234" required>
+            <input type="password" id="pass-emp" class="form-control" placeholder="Ingrese contraseña" required autocomplete="new-password">
           </div>
           <button type="submit" class="btn">Ingresar al Sistema</button>
         </form>
@@ -145,23 +145,23 @@
         <div class="card">
           <h3 class="card-title">Registrar Nueva Infracción</h3>
           <p class="card-subtitle">Ingrese los detalles de la multa emitida.</p>
-          <form onsubmit="registrarMulta(event)">
+          <form onsubmit="registrarMulta(event)" autocomplete="off">
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
               <div class="form-group">
                 <label>Nombre Completo</label>
-                <input type="text" id="reg-nombre" class="form-control" required>
+                <input type="text" id="reg-nombre" class="form-control" required autocomplete="off">
               </div>
               <div class="form-group">
                 <label>Cédula</label>
-                <input type="text" id="reg-cedula" class="form-control" required>
+                <input type="text" id="reg-cedula" class="form-control" required autocomplete="off">
               </div>
               <div class="form-group">
                 <label>Infracción / Motivo</label>
-                <input type="text" id="reg-motivo" class="form-control" placeholder="Ej: Exceso de velocidad" required>
+                <input type="text" id="reg-motivo" class="form-control" placeholder="Ej: Exceso de velocidad" required autocomplete="off">
               </div>
               <div class="form-group">
                 <label>Monto ($)</label>
-                <input type="number" id="reg-monto" class="form-control" placeholder="50" required>
+                <input type="number" id="reg-monto" class="form-control" placeholder="50" required autocomplete="off">
               </div>
             </div>
             <button type="submit" class="btn" style="width: auto; margin-top: 10px;">Registrar Multa</button>
@@ -196,14 +196,14 @@
       <div id="login-admin" class="card" style="max-width: 400px; margin: 0 auto;">
         <h2 class="card-title">Acceso Administrador</h2>
         <p class="card-subtitle">Ingrese sus credenciales de usuario autorizado.</p>
-        <form onsubmit="loginUser(event, 'admin')">
+        <form onsubmit="loginUser(event, 'admin')" autocomplete="off">
           <div class="form-group">
             <label>Usuario</label>
-            <input type="text" id="user-adm" class="form-control" value="admin" required>
+            <input type="text" id="user-adm" class="form-control" placeholder="Ingrese usuario" required autocomplete="off">
           </div>
           <div class="form-group">
             <label>Contraseña</label>
-            <input type="password" id="pass-adm" class="form-control" value="admin123" required>
+            <input type="password" id="pass-adm" class="form-control" placeholder="Ingrese contraseña" required autocomplete="new-password">
           </div>
           <button type="submit" class="btn">Ingresar al Sistema</button>
         </form>
@@ -263,21 +263,23 @@
       document.getElementById(`view-${viewName}`).classList.add('active');
       document.getElementById(`nav-${viewName}`).classList.add('active');
 
-      if (viewName === 'empleado' && localStorage.getItem('auth_empleado')) {
-        document.getElementById('login-empleado').classList.remove('active');
-        document.getElementById('panel-empleado').classList.add('active');
-        cargarTablaEmpleado();
+      // Restablecer formulario de login para exigir ingresar datos siempre
+      if (viewName === 'empleado') {
+        document.getElementById('panel-empleado').classList.remove('active');
+        document.getElementById('login-empleado').classList.add('active');
+        document.getElementById('user-emp').value = '';
+        document.getElementById('pass-emp').value = '';
       }
-      if (viewName === 'admin' && localStorage.getItem('auth_admin')) {
-        document.getElementById('login-admin').classList.remove('active');
-        document.getElementById('panel-admin').classList.add('active');
-        cargarTablaAdmin();
+      if (viewName === 'admin') {
+        document.getElementById('panel-admin').classList.remove('active');
+        document.getElementById('login-admin').classList.add('active');
+        document.getElementById('user-adm').value = '';
+        document.getElementById('pass-adm').value = '';
       }
     }
 
     function loginUser(e, role) {
       e.preventDefault();
-      localStorage.setItem(`auth_${role}`, 'true');
       if (role === 'empleado') {
         document.getElementById('login-empleado').classList.remove('active');
         document.getElementById('panel-empleado').classList.add('active');
@@ -290,13 +292,16 @@
     }
 
     function logout(role) {
-      localStorage.removeItem(`auth_${role}`);
       if (role === 'empleado') {
         document.getElementById('panel-empleado').classList.remove('active');
         document.getElementById('login-empleado').classList.add('active');
+        document.getElementById('user-emp').value = '';
+        document.getElementById('pass-emp').value = '';
       } else {
         document.getElementById('panel-admin').classList.remove('active');
         document.getElementById('login-admin').classList.add('active');
+        document.getElementById('user-adm').value = '';
+        document.getElementById('pass-adm').value = '';
       }
     }
 
