@@ -4,468 +4,198 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fedefiscal - Gestión de Multas</title>
-  <!-- Generador de Código QR -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
-    :root {
-      --bg: #0f172a;
-      --card: #1e293b;
-      --border: #334155;
-      --text: #f8fafc;
-      --muted: #94a3b8;
-      --primary: #0284c7;
-      --primary-hover: #0369a1;
-      --success: #10b981;
-      --danger: #ef4444;
-      --warning: #f59e0b;
-      --radius: 8px;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
-    body { background-color: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
-
-    header { background: var(--card); border-bottom: 1px solid var(--border); padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; }
-    .brand h1 { font-size: 1.3rem; font-weight: 700; color: #38bdf8; }
-    .brand p { font-size: 0.8rem; color: var(--muted); }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: #f8fafc; color: #0f172a; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
     
-    .role-badge { font-size: 0.8rem; padding: 4px 10px; border-radius: 12px; font-weight: 600; text-transform: uppercase; margin-right: 10px; }
-    .badge-admin { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid var(--danger); }
-    .badge-empleado { background: rgba(2, 132, 199, 0.2); color: #7dd3fc; border: 1px solid var(--primary); }
-
-    nav { display: flex; gap: 10px; align-items: center; }
-    nav button { background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 8px 16px; border-radius: 20px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
-    nav button:hover, nav button.active { background: var(--primary); color: white; border-color: var(--primary); }
-
-    main { max-width: 1100px; width: 100%; margin: 30px auto; padding: 0 20px; flex: 1; }
-    .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 25px; margin-bottom: 25px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-    .card-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 10px; color: var(--text); }
-
-    .grid-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px; }
-    .form-group { display: flex; flex-direction: column; gap: 6px; }
-    .form-group label { font-size: 0.85rem; font-weight: 600; color: var(--muted); }
-    .form-control { background: #0f172a; border: 1px solid var(--border); color: var(--text); padding: 10px 12px; border-radius: 6px; outline: none; font-size: 0.95rem; }
-    .form-control:focus { border-color: var(--primary); }
+    .container { width: 100%; max-width: 900px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
     
-    .btn { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
-    .btn:hover { background: var(--primary-hover); }
-    .btn-success { background: var(--success); }
-    .btn-danger { background: var(--danger); }
-    .btn-sm { padding: 5px 10px; font-size: 0.8rem; margin-right: 2px; }
-
-    .table-container { overflow-x: auto; margin-top: 15px; }
-    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; }
-    th, td { padding: 12px; border-bottom: 1px solid var(--border); }
-    th { color: var(--muted); font-weight: 600; background: #131d31; }
-
-    .panel { display: none; }
+    .card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 30px; text-align: center; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .card:hover { border-color: #0284c7; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(2, 132, 199, 0.1); }
+    .card h2 { font-size: 1.25rem; color: #0f172a; margin-bottom: 8px; }
+    .card p { font-size: 0.875rem; color: #64748b; }
+    
+    .panel { display: none; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 35px; width: 100%; max-width: 480px; margin: 0 auto; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
     .panel.active { display: block; }
-    .logout-btn { background: none; border: none; color: var(--danger); font-weight: 600; cursor: pointer; font-size: 0.85rem; }
-
-    /* Modal QR */
-    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 100; }
-    .modal-content { background: var(--card); padding: 25px; border-radius: 10px; text-align: center; max-width: 350px; width: 90%; }
-    #qrcode { display: flex; justify-content: center; margin: 15px 0; padding: 10px; background: white; border-radius: 8px; }
-
-    /* Estilos del PDF Fedefiscal */
-    #print-area { display: none; }
-    @media print {
-      body * { visibility: hidden; }
-      #print-area, #print-area * { visibility: visible; }
-      #print-area {
-        display: block !important;
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100%;
-        color: #000;
-        background: #fff;
-        padding: 40px;
-        font-family: Arial, sans-serif;
-      }
-      .pdf-header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 15px; margin-bottom: 20px; }
-      .pdf-header h1 { font-size: 22pt; margin: 0; color: #000; font-weight: bold; }
-      .pdf-header p { font-size: 10pt; color: #444; margin-top: 4px; }
-      .pdf-body { font-size: 11pt; line-height: 1.8; margin-bottom: 20px; }
-      .pdf-qr-box { text-align: center; margin-top: 30px; }
-    }
-
-    footer { text-align: center; padding: 20px; font-size: 0.8rem; color: var(--muted); border-top: 1px solid var(--border); margin-top: auto; }
+    .panel h2 { font-size: 1.25rem; margin-bottom: 20px; color: #0f172a; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; }
+    
+    .form-group { margin-bottom: 15px; text-align: left; }
+    .form-group label { display: block; font-size: 0.85rem; font-weight: 600; color: #475569; margin-bottom: 6px; }
+    input { width: 100%; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.95rem; outline: none; }
+    input:focus { border-color: #0284c7; }
+    
+    .btn { width: 100%; background: #0284c7; color: white; border: none; padding: 12px; border-radius: 6px; font-size: 0.95rem; font-weight: 600; cursor: pointer; margin-top: 10px; }
+    .btn:hover { background: #0369a1; }
+    .btn-secondary { background: transparent; color: #64748b; border: 1px solid #cbd5e1; margin-top: 8px; }
+    .btn-secondary:hover { background: #f1f5f9; }
+    
+    .infraction-box { background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+    .infraction-box p { margin-bottom: 8px; font-size: 0.95rem; }
+    .pay-btn { display: block; background: #16a34a; color: white; text-align: center; text-decoration: none; padding: 14px; border-radius: 6px; font-weight: bold; margin-top: 15px; }
+    .pay-btn:hover { background: #15803d; }
   </style>
 </head>
 <body>
 
-  <header>
-    <div class="brand">
-      <h1>Fedefiscal</h1>
-      <p>Gestión de Multas e Infracciones</p>
+<div class="container">
+
+  <!-- VISTA PRINCIPAL CON TRES PANELES -->
+  <div id="main-view" class="grid-3">
+    <div class="card" onclick="openPanel('consulta')">
+      <h2>Consultar Multa</h2>
+      <p>Consulte su estado de infracción con su cédula o boleta</p>
     </div>
-    <nav id="mainNav" style="display: none;">
-      <span id="roleBadge" class="role-badge"></span>
-      <button id="btn-crear" onclick="switchPanel('crear')">Crear Multa</button>
-      <button id="btn-consulta" onclick="switchPanel('consulta')">Consultar Cédula</button>
-      <button id="btn-historial" onclick="switchPanel('historial')">Historial General</button>
-      <button class="logout-btn" onclick="cerrarSesion()">Cerrar Sesión</button>
-    </nav>
-  </header>
-
-  <main>
-    <!-- LOGIN -->
-    <section id="panel-login" class="panel active">
-      <div class="card" style="max-width: 420px; margin: 40px auto;">
-        <h2 class="card-title">Acceso al Sistema - Fedefiscal</h2>
-        <form onsubmit="iniciarSesion(event)" autocomplete="off">
-          <div class="form-group" style="margin-bottom: 15px;">
-            <label>Tipo de Usuario</label>
-            <select id="tipo-usuario" class="form-control" onchange="actualizarPlaceholder()">
-              <option value="empleado">Empleado / Consulta</option>
-              <option value="admin">Administrador</option>
-            </select>
-          </div>
-          <div class="form-group" style="margin-bottom: 15px;">
-            <label>Usuario</label>
-            <input type="text" id="user" class="form-control" placeholder="Ingrese usuario" required>
-          </div>
-          <div class="form-group" style="margin-bottom: 20px;">
-            <label>Contraseña</label>
-            <input type="password" id="pass" class="form-control" placeholder="Ingrese contraseña" required>
-          </div>
-          <button type="submit" class="btn" style="width: 100%;">Ingresar</button>
-        </form>
-      </div>
-    </section>
-
-    <!-- REGISTRAR MULTA (Disponible para Administrador y Empleado) -->
-    <section id="panel-crear" class="panel">
-      <div class="card">
-        <h2 class="card-title">Registrar Nueva Multa</h2>
-        <form onsubmit="crearMulta(event)">
-          <div class="grid-form">
-            <div class="form-group">
-              <label>Cédula del Infractor</label>
-              <input type="text" id="m-cedula" class="form-control" placeholder="Ej: V-12345678" required>
-            </div>
-            <div class="form-group">
-              <label>Nombre Completo</label>
-              <input type="text" id="m-nombre" class="form-control" placeholder="Nombre y Apellido" required>
-            </div>
-            <div class="form-group">
-              <label>Motivo de Infracción</label>
-              <input type="text" id="m-motivo" class="form-control" placeholder="Ej: Incumplimiento de norma" required>
-            </div>
-            <div class="form-group">
-              <label>Monto ($)</label>
-              <input type="number" step="0.01" id="m-monto" class="form-control" placeholder="50.00" required>
-            </div>
-          </div>
-          <button type="submit" class="btn btn-success">Guardar y Generar Boleta</button>
-        </form>
-      </div>
-    </section>
-
-    <!-- CONSULTA POR CÉDULA (Panel Empleado / General) -->
-    <section id="panel-consulta" class="panel">
-      <div class="card" style="border: 1px solid var(--primary);">
-        <h2 class="card-title">Consulta de Multas por Cédula</h2>
-        <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 15px;">Ingrese el número de cédula para consultar las sanciones asociadas:</p>
-        <div style="display: flex; gap: 10px;">
-          <input type="text" id="c-cedula" class="form-control" placeholder="Ingrese número de cédula" style="flex: 1;">
-          <button onclick="consultarPorCedula()" class="btn">Consultar</button>
-        </div>
-        <div id="resultado-consulta" style="margin-top: 20px;"></div>
-      </div>
-    </section>
-
-    <!-- HISTORIAL GENERAL (Exclusivo Administrador o Gestión) -->
-    <section id="panel-historial" class="panel">
-      <div class="card">
-        <h2 class="card-title">Historial Completo de Multas (Administración)</h2>
-        <div class="table-container">
-          <table>
-            <thead>
-              <tr>
-                <th>N° Boleta</th>
-                <th>Cédula</th>
-                <th>Nombre</th>
-                <th>Motivo</th>
-                <th>Monto</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody id="tabla-multas"></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <!-- MODAL QR -->
-  <div id="modalQR" class="modal">
-    <div class="modal-content">
-      <h3 style="color: var(--text);">Código QR de Multa</h3>
-      <div id="qrcode"></div>
-      <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 15px;">Escanee para verificar los detalles directos de esta cédula.</p>
-      <button onclick="cerrarModal()" class="btn btn-danger">Cerrar</button>
+    <div class="card" onclick="openPanel('login-empleado')">
+      <h2>Empleado</h2>
+      <p>Acceso para el registro de sanciones</p>
+    </div>
+    <div class="card" onclick="openPanel('login-admin')">
+      <h2>Administrador</h2>
+      <p>Control total e historial del sistema</p>
     </div>
   </div>
 
-  <!-- PLANTILLA DE IMPRESIÓN / PDF (FEDEFISCAL) -->
-  <div id="print-area">
-    <div class="pdf-header">
-      <h1>FEDEFISCAL</h1>
-      <p>ORGANISMO OFICIAL DE CONTROL Y FISCALIZACIÓN</p>
-      <p>BOLETA OFICIAL DE SANCIÓN E INFRACCIÓN</p>
+  <!-- PANEL DE LOGIN EMPLEADO -->
+  <div id="panel-login-empleado" class="panel">
+    <h2>Ingreso Empleado</h2>
+    <div class="form-group">
+      <label>Contraseña</label>
+      <input type="password" id="pass-empleado" placeholder="Ingrese contraseña">
     </div>
-
-    <div class="pdf-body">
-      <p><strong>N° de Boleta:</strong> <span id="pdf-id"></span></p>
-      <p><strong>Fecha de Emisión:</strong> <span id="pdf-fecha"></span></p>
-      <hr style="margin: 10px 0; border: none; border-top: 1px solid #ccc;">
-      <p><strong>Cédula del Infractor:</strong> <span id="pdf-cedula"></span></p>
-      <p><strong>Nombre y Apellidos:</strong> <span id="pdf-nombre"></span></p>
-      <p><strong>Motivo de la Sanción:</strong> <span id="pdf-motivo"></span></p>
-      <p style="font-size: 13pt; margin-top: 10px;"><strong>Monto Total a Cancelar:</strong> $<span id="pdf-monto"></span></p>
-    </div>
-
-    <div class="pdf-qr-box">
-      <div id="pdf-qr-img" style="display: inline-block;"></div>
-      <p style="font-size: 9pt; margin-top: 8px; color: #444;">Código de verificación institucional Fedefiscal.</p>
-    </div>
+    <button class="btn" onclick="loginEmpleado()">Ingresar</button>
+    <button class="btn btn-secondary" onclick="volverse()">Volver</button>
   </div>
 
-  <footer>
-    © Fedefiscal - Todos los derechos reservados.
-  </footer>
+  <!-- PANEL DE LOGIN ADMIN -->
+  <div id="panel-login-admin" class="panel">
+    <h2>Ingreso Administrador</h2>
+    <div class="form-group">
+      <label>Contraseña</label>
+      <input type="password" id="pass-admin" placeholder="Ingrese contraseña">
+    </div>
+    <button class="btn" onclick="loginAdmin()">Ingresar</button>
+    <button class="btn btn-secondary" onclick="volverse()">Volver</button>
+  </div>
 
-  <script>
-    let usuarioActual = null;
-    let multas = JSON.parse(localStorage.getItem('fedefiscal_multas')) || [];
+  <!-- PANEL CONSULTA POR CÉDULA -->
+  <div id="panel-consulta" class="panel">
+    <h2>Consulta de Multa</h2>
+    <div class="form-group">
+      <label>Número de Cédula</label>
+      <input type="text" id="cedula-buscar" placeholder="Ej: V-12345678">
+    </div>
+    <button class="btn" onclick="buscarMulta()">Consultar</button>
+    <button class="btn btn-secondary" onclick="volverse()">Volver</button>
+    <div id="resultado-busqueda" style="margin-top: 20px;"></div>
+  </div>
 
-    function guardarData() {
-      localStorage.setItem('fedefiscal_multas', JSON.stringify(multas));
+  <!-- PANEL DE DETALLE AL ESCANEAR CÓDIGO QR -->
+  <div id="panel-qr-detail" class="panel">
+    <h2 style="color: #dc2626;">Detalle de Infracción</h2>
+    <div class="infraction-box">
+      <p><strong>N° Boleta:</strong> <span id="qr-id"></span></p>
+      <p><strong>Infractor:</strong> <span id="qr-nombre"></span></p>
+      <p><strong>Motivo:</strong> <span id="qr-motivo"></span></p>
+      <p><strong>Monto:</strong> $<span id="qr-monto"></span></p>
+      <p style="color: #dc2626; font-weight: bold; margin-top: 10px;">
+        Tiempo límite de pago: 5 días hábiles
+      </p>
+    </div>
+    <a href="#" id="qr-link-pago" target="_blank" class="pay-btn">Pagar Multa Ahora</a>
+    <button class="btn btn-secondary" onclick="volverse()" style="margin-top: 15px;">Ir al Inicio</button>
+  </div>
+
+</div>
+
+<script>
+  // Datos simulados de multas
+  let multas = [
+    { id: "FF-1001", cedula: "V-12345678", nombre: "Juan Pérez", motivo: "Exceso de velocidad", monto: "120.00" }
+  ];
+
+  function hideAll() {
+    document.getElementById('main-view').style.display = 'none';
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  }
+
+  function volverse() {
+    hideAll();
+    document.getElementById('main-view').style.display = 'grid';
+  }
+
+  function openPanel(tipo) {
+    hideAll();
+    if (tipo === 'consulta') {
+      document.getElementById('panel-consulta').classList.add('active');
+    } else if (tipo === 'login-empleado') {
+      document.getElementById('panel-login-empleado').classList.add('active');
+    } else if (tipo === 'login-admin') {
+      document.getElementById('panel-login-admin').classList.add('active');
     }
+  }
 
-    function iniciarSesion(e) {
-      e.preventDefault();
-      const tipo = document.getElementById('tipo-usuario').value;
-      const u = document.getElementById('user').value.trim();
-      const p = document.getElementById('pass').value.trim();
-
-      if (tipo === 'admin') {
-        if (u === 'admin' && p === '15572680') {
-          usuarioActual = 'admin';
-          configurarInterfazAdmin();
-        } else {
-          alert('Credenciales de Administrador incorrectas');
-        }
-      } else if (tipo === 'empleado') {
-        if (u === 'empleado' && p === '1234') {
-          usuarioActual = 'empleado';
-          configurarInterfazEmpleado();
-        } else {
-          alert('Credenciales de Empleado incorrectas');
-        }
-      }
+  function loginEmpleado() {
+    const pass = document.getElementById('pass-empleado').value;
+    if (pass === 'receso05') {
+      alert("Acceso concedido como Empleado.");
+      document.getElementById('pass-empleado').value = '';
+    } else {
+      alert("Contraseña incorrecta");
     }
+  }
 
-    function configurarInterfazAdmin() {
-      document.getElementById('panel-login').classList.remove('active');
-      document.getElementById('mainNav').style.display = 'flex';
-      
-      const badge = document.getElementById('roleBadge');
-      badge.className = 'role-badge badge-admin';
-      badge.innerText = 'Admin';
-
-      document.getElementById('btn-crear').style.display = 'inline-block';
-      document.getElementById('btn-consulta').style.display = 'inline-block';
-      document.getElementById('btn-historial').style.display = 'inline-block';
-
-      switchPanel('crear');
+  function loginAdmin() {
+    const pass = document.getElementById('pass-admin').value;
+    if (pass === 'receso01') {
+      alert("Acceso concedido como Administrador.");
+      document.getElementById('pass-admin').value = '';
+    } else {
+      alert("Contraseña incorrecta");
     }
+  }
 
-    function configurarInterfazEmpleado() {
-      document.getElementById('panel-login').classList.remove('active');
-      document.getElementById('mainNav').style.display = 'flex';
+  function buscarMulta() {
+    const cedula = document.getElementById('cedula-buscar').value.trim();
+    const resDiv = document.getElementById('resultado-busqueda');
+    const encontrada = multas.find(m => m.cedula.toLowerCase() === cedula.toLowerCase());
 
-      const badge = document.getElementById('roleBadge');
-      badge.className = 'role-badge badge-empleado';
-      badge.innerText = 'Empleado';
-
-      document.getElementById('btn-crear').style.display = 'inline-block';
-      document.getElementById('btn-consulta').style.display = 'inline-block';
-      document.getElementById('btn-historial').style.display = 'none';
-
-      switchPanel('consulta');
+    if (encontrada) {
+      resDiv.innerHTML = `
+        <div style="background: #f8fafc; border: 1px solid #cbd5e1; padding: 15px; border-radius: 6px;">
+          <p><strong>N° Boleta:</strong> ${encontrada.id}</p>
+          <p><strong>Motivo:</strong> ${encontrada.motivo}</p>
+          <p><strong>Monto:</strong> $${encontrada.monto}</p>
+          <button class="btn" style="margin-top: 10px;" onclick="verDetalleQR('${encontrada.id}')">Ver Enlace de Pago</button>
+        </div>
+      `;
+    } else {
+      resDiv.innerHTML = `<p style="color: #16a34a; font-weight: bold;">Sin multas registradas para esta cédula.</p>`;
     }
+  }
 
-    function cerrarSesion() {
-      usuarioActual = null;
-      document.getElementById('mainNav').style.display = 'none';
-      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-      document.getElementById('panel-login').classList.add('active');
-      document.getElementById('user').value = '';
-      document.getElementById('pass').value = '';
+  function verDetalleQR(id) {
+    const m = multas.find(item => item.id === id);
+    if (m) {
+      hideAll();
+      document.getElementById('panel-qr-detail').classList.add('active');
+      document.getElementById('qr-id').innerText = m.id;
+      document.getElementById('qr-nombre').innerText = m.nombre;
+      document.getElementById('qr-motivo').innerText = m.motivo;
+      document.getElementById('qr-monto').innerText = m.monto;
+      document.getElementById('qr-link-pago').href = `https://pagos.fedefiscal.gob/pay/${m.id}`;
     }
+  }
 
-    function switchPanel(panel) {
-      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-      document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-      
-      document.getElementById(`panel-${panel}`).classList.add('active');
-      const btn = document.getElementById(`btn-${panel}`);
-      if (btn) btn.classList.add('active');
-
-      if (panel === 'historial') cargarTabla();
+  // Detecta el escaneo del código QR por URL (ej: ?multa=FF-1001)
+  window.onload = function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const multaId = urlParams.get('multa');
+    if (multaId) {
+      verDetalleQR(multaId);
     }
+  };
+</script>
 
-    function crearMulta(e) {
-      e.preventDefault();
-      const nuevaMulta = {
-        id: 'FF-' + Date.now().toString().slice(-6),
-        cedula: document.getElementById('m-cedula').value.trim(),
-        nombre: document.getElementById('m-nombre').value.trim(),
-        motivo: document.getElementById('m-motivo').value.trim(),
-        monto: parseFloat(document.getElementById('m-monto').value).toFixed(2),
-        fecha: new Date().toLocaleDateString()
-      };
-
-      multas.push(nuevaMulta);
-      guardarData();
-      e.target.reset();
-      alert('Multa registrada con éxito en Fedefiscal.');
-      
-      if (usuarioActual === 'admin') {
-        switchPanel('historial');
-      } else {
-        switchPanel('consulta');
-      }
-    }
-
-    function cargarTabla() {
-      const tbody = document.getElementById('tabla-multas');
-      tbody.innerHTML = '';
-      multas.forEach((m, i) => {
-        let botonEliminar = usuarioActual === 'admin' 
-          ? `<button class="btn btn-sm btn-danger" onclick="eliminarMulta(${i})">Eliminar</button>` 
-          : '';
-
-        tbody.innerHTML += `<tr>
-          <td>${m.id}</td>
-          <td>${m.cedula}</td>
-          <td>${m.nombre}</td>
-          <td>${m.motivo}</td>
-          <td>$${m.monto}</td>
-          <td>
-            <button class="btn btn-sm" onclick="verQR('${m.cedula}')">Ver QR</button>
-            <button class="btn btn-sm btn-success" onclick="generarPDF(${i})">Generar PDF</button>
-            ${botonEliminar}
-          </td>
-        </tr>`;
-      });
-    }
-
-    function eliminarMulta(i) {
-      if (confirm('¿Está seguro de eliminar esta multa registrada?')) {
-        multas.splice(i, 1);
-        guardarData();
-        cargarTabla();
-      }
-    }
-
-    function verQR(cedula) {
-      const qrDiv = document.getElementById('qrcode');
-      qrDiv.innerHTML = '';
-      
-      const urlConsulta = `${window.location.href.split('?')[0]}?cedula=${cedula}`;
-      
-      new QRCode(qrDiv, {
-        text: urlConsulta,
-        width: 170,
-        height: 170
-      });
-
-      document.getElementById('modalQR').style.display = 'flex';
-    }
-
-    function cerrarModal() {
-      document.getElementById('modalQR').style.display = 'none';
-    }
-
-    function generarPDF(i) {
-      const m = multas[i];
-      document.getElementById('pdf-id').innerText = m.id;
-      document.getElementById('pdf-cedula').innerText = m.cedula;
-      document.getElementById('pdf-nombre').innerText = m.nombre;
-      document.getElementById('pdf-motivo').innerText = m.motivo;
-      document.getElementById('pdf-monto').innerText = m.monto;
-      document.getElementById('pdf-fecha').innerText = m.fecha;
-
-      const pdfQrDiv = document.getElementById('pdf-qr-img');
-      pdfQrDiv.innerHTML = '';
-      const urlConsulta = `${window.location.href.split('?')[0]}?cedula=${m.cedula}`;
-      
-      new QRCode(pdfQrDiv, {
-        text: urlConsulta,
-        width: 130,
-        height: 130
-      });
-
-      setTimeout(() => {
-        window.print();
-      }, 300);
-    }
-
-    function consultarPorCedula(cedulaDirecta) {
-      const cedulaBuscada = cedulaDirecta || document.getElementById('c-cedula').value.trim();
-      const resultado = document.getElementById('resultado-consulta');
-      
-      if (!cedulaBuscada) return;
-
-      const encontradas = multas.filter(m => m.cedula.toLowerCase() === cedulaBuscada.toLowerCase());
-
-      if (encontradas.length === 0) {
-        resultado.innerHTML = `<p style="color: var(--success); font-weight: bold;">No se encontraron multas registradas para la cédula ${cedulaBuscada}.</p>`;
-      } else {
-        let html = `<p style="color: var(--danger); font-weight: bold;">Multas registradas (${encontradas.length}):</p><br>`;
-        encontradas.forEach((m, idx) => {
-          html += `<div style="background: #0f172a; padding: 15px; border-radius: 6px; margin-bottom: 10px; border-left: 4px solid var(--danger);">
-            <p><strong>N° Boleta:</strong> ${m.id} | <strong>Fecha:</strong> ${m.fecha}</p>
-            <p><strong>Infractor:</strong> ${m.nombre}</p>
-            <p><strong>Motivo:</strong> ${m.motivo}</p>
-            <p><strong>Monto:</strong> $${m.monto}</p>
-            <div style="margin-top: 10px;">
-              <button class="btn btn-sm btn-success" onclick="generarPDFPorObjeto('${m.id}')">Imprimir Boleta PDF</button>
-            </div>
-          </div>`;
-        });
-        resultado.innerHTML = html;
-      }
-    }
-
-    function generarPDFPorObjeto(idMulta) {
-      const index = multas.findIndex(m => m.id === idMulta);
-      if (index !== -1) generarPDF(index);
-    }
-
-    window.onload = function() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const cedulaUrl = urlParams.get('cedula');
-      if (cedulaUrl) {
-        document.getElementById('panel-login').classList.remove('active');
-        document.getElementById('mainNav').style.display = 'flex';
-        
-        const badge = document.getElementById('roleBadge');
-        badge.className = 'role-badge badge-empleado';
-        badge.innerText = 'Consulta Púb.';
-
-        document.getElementById('btn-crear').style.display = 'none';
-        document.getElementById('btn-consulta').style.display = 'inline-block';
-        document.getElementById('btn-historial').style.display = 'none';
-
-        switchPanel('consulta');
-        document.getElementById('c-cedula').value = cedulaUrl;
-        consultarPorCedula(cedulaUrl);
-      }
-    }
-  </script>
 </body>
 </html>
