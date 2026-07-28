@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fedefiscal - Sistema de Multas</title>
+  <title>Fedefiscal - Gestión de Multas</title>
   <!-- Generador de Código QR -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
@@ -17,6 +17,7 @@
       --primary-hover: #0369a1;
       --success: #10b981;
       --danger: #ef4444;
+      --warning: #f59e0b;
       --radius: 8px;
     }
 
@@ -27,7 +28,11 @@
     .brand h1 { font-size: 1.3rem; font-weight: 700; color: #38bdf8; }
     .brand p { font-size: 0.8rem; color: var(--muted); }
     
-    nav { display: flex; gap: 10px; }
+    .role-badge { font-size: 0.8rem; padding: 4px 10px; border-radius: 12px; font-weight: 600; text-transform: uppercase; margin-right: 10px; }
+    .badge-admin { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid var(--danger); }
+    .badge-empleado { background: rgba(2, 132, 199, 0.2); color: #7dd3fc; border: 1px solid var(--primary); }
+
+    nav { display: flex; gap: 10px; align-items: center; }
     nav button { background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 8px 16px; border-radius: 20px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
     nav button:hover, nav button.active { background: var(--primary); color: white; border-color: var(--primary); }
 
@@ -61,7 +66,7 @@
     .modal-content { background: var(--card); padding: 25px; border-radius: 10px; text-align: center; max-width: 350px; width: 90%; }
     #qrcode { display: flex; justify-content: center; margin: 15px 0; padding: 10px; background: white; border-radius: 8px; }
 
-    /* Estilos de PDF Fedefiscal */
+    /* Estilos del PDF Fedefiscal */
     #print-area { display: none; }
     @media print {
       body * { visibility: hidden; }
@@ -92,12 +97,13 @@
   <header>
     <div class="brand">
       <h1>Fedefiscal</h1>
-      <p>Organismo de Control y Fiscalización</p>
+      <p>Gestión de Multas e Infracciones</p>
     </div>
     <nav id="mainNav" style="display: none;">
-      <button id="btn-crear" class="active" onclick="switchPanel('crear')">Crear Multa</button>
-      <button id="btn-historial" onclick="switchPanel('historial')">Historial</button>
+      <span id="roleBadge" class="role-badge"></span>
+      <button id="btn-crear" onclick="switchPanel('crear')">Crear Multa</button>
       <button id="btn-consulta" onclick="switchPanel('consulta')">Consultar Cédula</button>
+      <button id="btn-historial" onclick="switchPanel('historial')">Historial General</button>
       <button class="logout-btn" onclick="cerrarSesion()">Cerrar Sesión</button>
     </nav>
   </header>
@@ -105,9 +111,16 @@
   <main>
     <!-- LOGIN -->
     <section id="panel-login" class="panel active">
-      <div class="card" style="max-width: 400px; margin: 40px auto;">
-        <h2 class="card-title">Acceso Multas - Fedefiscal</h2>
+      <div class="card" style="max-width: 420px; margin: 40px auto;">
+        <h2 class="card-title">Acceso al Sistema - Fedefiscal</h2>
         <form onsubmit="iniciarSesion(event)" autocomplete="off">
+          <div class="form-group" style="margin-bottom: 15px;">
+            <label>Tipo de Usuario</label>
+            <select id="tipo-usuario" class="form-control" onchange="actualizarPlaceholder()">
+              <option value="empleado">Empleado / Consulta</option>
+              <option value="admin">Administrador</option>
+            </select>
+          </div>
           <div class="form-group" style="margin-bottom: 15px;">
             <label>Usuario</label>
             <input type="text" id="user" class="form-control" placeholder="Ingrese usuario" required>
@@ -121,10 +134,10 @@
       </div>
     </section>
 
-    <!-- REGISTRAR MULTA -->
+    <!-- REGISTRAR MULTA (Disponible para Administrador y Empleado) -->
     <section id="panel-crear" class="panel">
       <div class="card">
-        <h2 class="card-title">Registrar Nueva Multa (Fedefiscal)</h2>
+        <h2 class="card-title">Registrar Nueva Multa</h2>
         <form onsubmit="crearMulta(event)">
           <div class="grid-form">
             <div class="form-group">
@@ -149,10 +162,23 @@
       </div>
     </section>
 
-    <!-- HISTORIAL DE MULTAS -->
+    <!-- CONSULTA POR CÉDULA (Panel Empleado / General) -->
+    <section id="panel-consulta" class="panel">
+      <div class="card" style="border: 1px solid var(--primary);">
+        <h2 class="card-title">Consulta de Multas por Cédula</h2>
+        <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 15px;">Ingrese el número de cédula para consultar las sanciones asociadas:</p>
+        <div style="display: flex; gap: 10px;">
+          <input type="text" id="c-cedula" class="form-control" placeholder="Ingrese número de cédula" style="flex: 1;">
+          <button onclick="consultarPorCedula()" class="btn">Consultar</button>
+        </div>
+        <div id="resultado-consulta" style="margin-top: 20px;"></div>
+      </div>
+    </section>
+
+    <!-- HISTORIAL GENERAL (Exclusivo Administrador o Gestión) -->
     <section id="panel-historial" class="panel">
       <div class="card">
-        <h2 class="card-title">Historial de Multas Emitidas</h2>
+        <h2 class="card-title">Historial Completo de Multas (Administración)</h2>
         <div class="table-container">
           <table>
             <thead>
@@ -170,19 +196,6 @@
         </div>
       </div>
     </section>
-
-    <!-- CONSULTA POR CÉDULA -->
-    <section id="panel-consulta" class="panel">
-      <div class="card" style="border: 2px solid #0284c7;">
-        <h2 class="card-title">Consulta de Multas por Cédula</h2>
-        <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 15px;">Escriba la cédula registrada para verificar las infracciones cargadas:</p>
-        <div style="display: flex; gap: 10px;">
-          <input type="text" id="c-cedula" class="form-control" placeholder="Ingrese cédula" style="flex: 1;">
-          <button onclick="consultarPorCedula()" class="btn">Consultar</button>
-        </div>
-        <div id="resultado-consulta" style="margin-top: 20px;"></div>
-      </div>
-    </section>
   </main>
 
   <!-- MODAL QR -->
@@ -190,12 +203,12 @@
     <div class="modal-content">
       <h3 style="color: var(--text);">Código QR de Multa</h3>
       <div id="qrcode"></div>
-      <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 15px;">Al escanear este código se abrirá la consulta de esta cédula.</p>
+      <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 15px;">Escanee para verificar los detalles directos de esta cédula.</p>
       <button onclick="cerrarModal()" class="btn btn-danger">Cerrar</button>
     </div>
   </div>
 
-  <!-- PLANTILLA PDF IMPRESIÓN (FEDEFISCAL) -->
+  <!-- PLANTILLA DE IMPRESIÓN / PDF (FEDEFISCAL) -->
   <div id="print-area">
     <div class="pdf-header">
       <h1>FEDEFISCAL</h1>
@@ -215,7 +228,7 @@
 
     <div class="pdf-qr-box">
       <div id="pdf-qr-img" style="display: inline-block;"></div>
-      <p style="font-size: 9pt; margin-top: 8px; color: #444;">Escanee este código QR para validar la autenticidad de la sanción o revisar el expediente de la persona.</p>
+      <p style="font-size: 9pt; margin-top: 8px; color: #444;">Código de verificación institucional Fedefiscal.</p>
     </div>
   </div>
 
@@ -224,6 +237,7 @@
   </footer>
 
   <script>
+    let usuarioActual = null;
     let multas = JSON.parse(localStorage.getItem('fedefiscal_multas')) || [];
 
     function guardarData() {
@@ -232,19 +246,59 @@
 
     function iniciarSesion(e) {
       e.preventDefault();
+      const tipo = document.getElementById('tipo-usuario').value;
       const u = document.getElementById('user').value.trim();
       const p = document.getElementById('pass').value.trim();
 
-      if (u === 'admin' && p === '15572680') {
-        document.getElementById('panel-login').classList.remove('active');
-        document.getElementById('mainNav').style.display = 'flex';
-        switchPanel('crear');
-      } else {
-        alert('Usuario o contraseña incorrectos');
+      if (tipo === 'admin') {
+        if (u === 'admin' && p === '15572680') {
+          usuarioActual = 'admin';
+          configurarInterfazAdmin();
+        } else {
+          alert('Credenciales de Administrador incorrectas');
+        }
+      } else if (tipo === 'empleado') {
+        if (u === 'empleado' && p === '1234') {
+          usuarioActual = 'empleado';
+          configurarInterfazEmpleado();
+        } else {
+          alert('Credenciales de Empleado incorrectas');
+        }
       }
     }
 
+    function configurarInterfazAdmin() {
+      document.getElementById('panel-login').classList.remove('active');
+      document.getElementById('mainNav').style.display = 'flex';
+      
+      const badge = document.getElementById('roleBadge');
+      badge.className = 'role-badge badge-admin';
+      badge.innerText = 'Admin';
+
+      document.getElementById('btn-crear').style.display = 'inline-block';
+      document.getElementById('btn-consulta').style.display = 'inline-block';
+      document.getElementById('btn-historial').style.display = 'inline-block';
+
+      switchPanel('crear');
+    }
+
+    function configurarInterfazEmpleado() {
+      document.getElementById('panel-login').classList.remove('active');
+      document.getElementById('mainNav').style.display = 'flex';
+
+      const badge = document.getElementById('roleBadge');
+      badge.className = 'role-badge badge-empleado';
+      badge.innerText = 'Empleado';
+
+      document.getElementById('btn-crear').style.display = 'inline-block';
+      document.getElementById('btn-consulta').style.display = 'inline-block';
+      document.getElementById('btn-historial').style.display = 'none';
+
+      switchPanel('consulta');
+    }
+
     function cerrarSesion() {
+      usuarioActual = null;
       document.getElementById('mainNav').style.display = 'none';
       document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
       document.getElementById('panel-login').classList.add('active');
@@ -278,13 +332,22 @@
       guardarData();
       e.target.reset();
       alert('Multa registrada con éxito en Fedefiscal.');
-      switchPanel('historial');
+      
+      if (usuarioActual === 'admin') {
+        switchPanel('historial');
+      } else {
+        switchPanel('consulta');
+      }
     }
 
     function cargarTabla() {
       const tbody = document.getElementById('tabla-multas');
       tbody.innerHTML = '';
       multas.forEach((m, i) => {
+        let botonEliminar = usuarioActual === 'admin' 
+          ? `<button class="btn btn-sm btn-danger" onclick="eliminarMulta(${i})">Eliminar</button>` 
+          : '';
+
         tbody.innerHTML += `<tr>
           <td>${m.id}</td>
           <td>${m.cedula}</td>
@@ -294,16 +357,18 @@
           <td>
             <button class="btn btn-sm" onclick="verQR('${m.cedula}')">Ver QR</button>
             <button class="btn btn-sm btn-success" onclick="generarPDF(${i})">Generar PDF</button>
-            <button class="btn btn-sm btn-danger" onclick="eliminarMulta(${i})">Eliminar</button>
+            ${botonEliminar}
           </td>
         </tr>`;
       });
     }
 
     function eliminarMulta(i) {
-      multas.splice(i, 1);
-      guardarData();
-      cargarTabla();
+      if (confirm('¿Está seguro de eliminar esta multa registrada?')) {
+        multas.splice(i, 1);
+        guardarData();
+        cargarTabla();
+      }
     }
 
     function verQR(cedula) {
@@ -358,19 +423,27 @@
       const encontradas = multas.filter(m => m.cedula.toLowerCase() === cedulaBuscada.toLowerCase());
 
       if (encontradas.length === 0) {
-        resultado.innerHTML = `<p style="color: var(--success); font-weight: bold;">No se encontraron multas registradas en Fedefiscal para la cédula ${cedulaBuscada}.</p>`;
+        resultado.innerHTML = `<p style="color: var(--success); font-weight: bold;">No se encontraron multas registradas para la cédula ${cedulaBuscada}.</p>`;
       } else {
         let html = `<p style="color: var(--danger); font-weight: bold;">Multas registradas (${encontradas.length}):</p><br>`;
-        encontradas.forEach(m => {
-          html += `<div style="background: #0f172a; padding: 12px; border-radius: 6px; margin-bottom: 8px; border-left: 4px solid var(--danger);">
-            <p><strong>N° Boleta Fedefiscal:</strong> ${m.id} | <strong>Fecha:</strong> ${m.fecha}</p>
+        encontradas.forEach((m, idx) => {
+          html += `<div style="background: #0f172a; padding: 15px; border-radius: 6px; margin-bottom: 10px; border-left: 4px solid var(--danger);">
+            <p><strong>N° Boleta:</strong> ${m.id} | <strong>Fecha:</strong> ${m.fecha}</p>
             <p><strong>Infractor:</strong> ${m.nombre}</p>
             <p><strong>Motivo:</strong> ${m.motivo}</p>
             <p><strong>Monto:</strong> $${m.monto}</p>
+            <div style="margin-top: 10px;">
+              <button class="btn btn-sm btn-success" onclick="generarPDFPorObjeto('${m.id}')">Imprimir Boleta PDF</button>
+            </div>
           </div>`;
         });
         resultado.innerHTML = html;
       }
+    }
+
+    function generarPDFPorObjeto(idMulta) {
+      const index = multas.findIndex(m => m.id === idMulta);
+      if (index !== -1) generarPDF(index);
     }
 
     window.onload = function() {
@@ -378,6 +451,16 @@
       const cedulaUrl = urlParams.get('cedula');
       if (cedulaUrl) {
         document.getElementById('panel-login').classList.remove('active');
+        document.getElementById('mainNav').style.display = 'flex';
+        
+        const badge = document.getElementById('roleBadge');
+        badge.className = 'role-badge badge-empleado';
+        badge.innerText = 'Consulta Púb.';
+
+        document.getElementById('btn-crear').style.display = 'none';
+        document.getElementById('btn-consulta').style.display = 'inline-block';
+        document.getElementById('btn-historial').style.display = 'none';
+
         switchPanel('consulta');
         document.getElementById('c-cedula').value = cedulaUrl;
         consultarPorCedula(cedulaUrl);
